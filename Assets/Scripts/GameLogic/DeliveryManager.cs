@@ -6,6 +6,8 @@ using UnityEngine;
 public class DeliveryManager : MonoBehaviour
 {
     public event EventHandler OnUpdateWaitingRecipesList;
+    public event EventHandler OnDeliverRecipeSuccess;
+    public event EventHandler OnDeliverRecipeFail;
 
     public static DeliveryManager Instance { get; private set; }
 
@@ -75,10 +77,13 @@ public class DeliveryManager : MonoBehaviour
                     waitingRecipeSOList.RemoveAt(i);
 
                     OnUpdateWaitingRecipesList?.Invoke(this, EventArgs.Empty);
+                    OnDeliverRecipeSuccess?.Invoke(this, EventArgs.Empty);
 
                     return;
                 }
             }
         }
+        
+        OnDeliverRecipeFail?.Invoke(this, EventArgs.Empty);
     }
 }

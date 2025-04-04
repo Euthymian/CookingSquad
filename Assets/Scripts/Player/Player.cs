@@ -12,6 +12,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     {
         public BaseCounter selectedCounter;
     }
+    public event EventHandler OnPickupSomething;
 
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
@@ -154,5 +155,8 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     public void SetKitchenObject(KitchenObject kitchenObject)
     {
         this.kitchenObject = kitchenObject;
+
+        if(kitchenObject != null)
+            OnPickupSomething?.Invoke(this, EventArgs.Empty);
     }
 }
