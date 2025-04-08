@@ -16,7 +16,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
-    [SerializeField] private GameInput gameInput;
+    //[SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask counterLayer;
     private Vector2 inputVector;
     private Vector3 moveDir;
@@ -39,18 +39,22 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private void Start()
     {
-        gameInput.OnInteractAction += GameInput_OnInteractAction;
-        gameInput.OnInteractAlternateAction += GameInput_OnInteractAlternateAction;
+        GameInput.Instance.OnInteractAction += GameInput_OnInteractAction;
+        GameInput.Instance.OnInteractAlternateAction += GameInput_OnInteractAlternateAction;
     }
 
     private void GameInput_OnInteractAlternateAction(object sender, EventArgs e)
     {
+        if(!GameManager.Instance.IsGamePlaying()) return;
+
         if (selectedCounter != null)
             selectedCounter.InteractAlternate(this);
     }
 
     private void GameInput_OnInteractAction(object sender, EventArgs e)
     {
+        if (!GameManager.Instance.IsGamePlaying()) return;
+
         if (selectedCounter != null) 
             selectedCounter.Interact(this);
     }
@@ -94,7 +98,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private void HandleInput()
     {
-        inputVector = gameInput.GetMovementVectorNormalized();
+        inputVector = GameInput.Instance.GetMovementVectorNormalized();
         moveDir = new Vector3(inputVector.x, 0, inputVector.y);
     }
 
