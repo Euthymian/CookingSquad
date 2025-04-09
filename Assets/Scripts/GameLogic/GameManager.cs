@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     private float gamePlayingTimeMax = 30f;
     private float gamePlayingTimer = 30f;
     private bool isPausing = false;
+    public bool IsPausing { get { return isPausing; } }
 
     private void Awake()
     {
