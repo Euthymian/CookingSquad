@@ -66,7 +66,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             ],
             ""bindings"": [
                 {
-                    ""name"": ""WASD"",
+                    ""name"": ""WSAD"",
                     ""id"": ""69eea690-c0f3-4283-abdd-0076b0d0af6a"",
                     ""path"": ""2DVector"",
                     ""interactions"": """",
