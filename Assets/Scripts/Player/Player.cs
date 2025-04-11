@@ -117,7 +117,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
         Vector3 updatedMoveDir = moveDir;
 
-        if (!canMove && moveDir.x != 0 && moveDir.z != 0)
+        if (!canMove && (Mathf.Abs(moveDir.x) > 0.2f) && (Mathf.Abs(moveDir.z) > 0.2f))
         {
             if (!Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, new Vector3(moveDir.x, 0, 0), moveDistance))
             {
