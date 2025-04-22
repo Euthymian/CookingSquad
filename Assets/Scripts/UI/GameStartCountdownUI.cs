@@ -39,10 +39,8 @@ public class GameStartCountdownUI : MonoBehaviour
         int currentCountdownValue = GameManager.Instance.GetCountdownToStartTimer() + 1;
         if(currentCountdownValue != previousCountdownValue)
         {
-            print(currentCountdownValue);
             countdownText.text = currentCountdownValue.ToString();
             anim.SetTrigger(COUNTDOWN_ANIMATION_TRIGGER);
-            //anim.ResetTrigger(COUNTDOWN_ANIMATION_TRIGGER);
             SoundManager.Instance.PlayCountdownNumberPopupSound();           
             previousCountdownValue = currentCountdownValue;
         }
