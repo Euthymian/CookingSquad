@@ -70,6 +70,7 @@ public class DeliveryManager : MonoBehaviour
                     if (!ingredientFound)
                     {
                         plateContentMatchesRecipe = false;
+                        break;
                     }
                 }
 
