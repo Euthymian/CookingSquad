@@ -27,7 +27,7 @@ public class TutorialUI : MonoBehaviour
 
     private void GameManager_OnStateChanged(object sender, System.EventArgs e)
     {
-        if (GameManager.Instance.IsCountdownToStart())
+        if (!GameManager.Instance.IsWaiting())
         {
             Hide();
         }

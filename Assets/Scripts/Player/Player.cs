@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Player : MonoBehaviour, IKitchenObjectParent
+public class Player : NetworkBehaviour, IKitchenObjectParent
 {
-    public static Player Instance { get; private set; }
+    //public static Player Instance { get; private set; }
 
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs
@@ -32,9 +33,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private void Awake()
     {
-        if (Instance != null)
-            Debug.LogError("More than 1 Player instance");
-        Instance = this;
+        //Instance = this;
     }
 
     private void Start()
@@ -61,8 +60,9 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
     private void Update()
     {
+        if(!IsOwner) return;
         HandleInput();
-        HandleMovements();
+        HandleMovements(); // Comment this when use server authoritative
         HandleInteractions();
     }
 
@@ -76,14 +76,11 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         {
             if (hitInfo.transform.TryGetComponent(out BaseCounter counter))
             {
-                if (counter != selectedCounter)
-                    SetSelectedCounter(counter);
+                if (counter != selectedCounter) SetSelectedCounter(counter);
             }
-            else
-                SetSelectedCounter(null);
+            else SetSelectedCounter(null);
         }
-        else
-            SetSelectedCounter(null);
+        else SetSelectedCounter(null);
     }
 
     private void SetSelectedCounter(BaseCounter selectedCounter)
@@ -100,11 +97,44 @@ public class Player : MonoBehaviour, IKitchenObjectParent
     {
         inputVector = GameInput.Instance.GetMovementVectorNormalized();
         moveDir = new Vector3(inputVector.x, 0, inputVector.y);
+        //HandleMovementsServerRpc(inputVector, moveDir); // This is for server authoritative principle. Clients send input to server then server processes input then make clients move
+        // Pass arguments to rpc this required, test by removing
+        // Use NetworkTransform for server auth, ClientNetworkTransform for client auth
     }
 
     public bool IsWalking()
     {
         return isWalking;
+    }
+
+    [ServerRpc]
+    private void HandleMovementsServerRpc(Vector2 inputVector, Vector3 moveDir)
+    {
+        isWalking = inputVector != Vector2.zero;
+
+        float moveDistance = moveSpeed * Time.deltaTime;
+
+        bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDir, moveDistance);
+
+        Vector3 updatedMoveDir = moveDir;
+
+        if (!canMove && (Mathf.Abs(moveDir.x) > 0.2f) && (Mathf.Abs(moveDir.z) > 0.2f))
+        {
+            if (!Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, new Vector3(moveDir.x, 0, 0), moveDistance))
+            {
+                canMove = true;
+                updatedMoveDir.z = 0;
+            }
+            else if (!Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, new Vector3(0, 0, moveDir.z), moveDistance))
+            {
+                canMove = true;
+                updatedMoveDir.x = 0;
+            }
+        }
+
+        if (canMove)
+            transform.position += updatedMoveDir * moveDistance;
+        transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
     }
 
     private void HandleMovements()

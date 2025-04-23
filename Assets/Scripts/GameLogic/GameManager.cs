@@ -20,16 +20,16 @@ public class GameManager : MonoBehaviour
     }
 
     private State state;
-    private float countdownToStartTimer = 2.99f;
+    private float countdownToStartTimer = 1f;
     private float gamePlayingTimeMax = 30f;
-    private float gamePlayingTimer = 30f;
+    private float gamePlayingTimer = 300f;
     private bool isPausing = false;
     public bool IsPausing { get { return isPausing; } }
 
     private void Awake()
     {
         Instance = this;
-        state = State.WaitingToStart;
+        state = State.CountdownToStart;
     }
 
     private void Start()
@@ -88,6 +88,11 @@ public class GameManager : MonoBehaviour
     public bool IsGamePlaying()
     {
         return state == State.GamePlaying;
+    }
+
+    public bool IsWaiting()
+    {
+        return state == State.WaitingToStart;
     }
 
     public bool IsCountdownToStart()
