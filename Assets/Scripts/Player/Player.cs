@@ -6,7 +6,16 @@ using UnityEngine;
 
 public class Player : NetworkBehaviour, IKitchenObjectParent
 {
-    //public static Player Instance { get; private set; }
+    public static event EventHandler OnAnyPlayerSpawned;
+    public static event EventHandler OnAnyPlayerPickupSomething;
+
+    public static void ResetStaticData()
+    {
+        OnAnyPlayerSpawned = null;
+        OnAnyPlayerPickupSomething = null;
+    }
+
+    public static Player LocalInstance { get; private set; }
 
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs
@@ -17,10 +26,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
-    //[SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask counterLayer;
-    private Vector2 inputVector;
-    private Vector3 moveDir;
+    private Vector2 inputVector => GameInput.Instance.GetMovementVectorNormalized();
+    private Vector3 moveDir => new Vector3(inputVector.x, 0, inputVector.y);
     private Vector3 lastMoveDir;
     private bool isWalking;
     private float playerRadius = 0.7f;
@@ -34,6 +42,16 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     private void Awake()
     {
         //Instance = this;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner)
+        {
+            LocalInstance = this;
+        }
+
+        OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     private void Start()
@@ -61,7 +79,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     private void Update()
     {
         if(!IsOwner) return;
-        HandleInput();
+        //HandleMovementsServerRpc(inputVector, moveDir); // This is for server authoritative principle. Clients send input to server then server processes input then make clients move
+        // Pass arguments to rpc is required, test by removing. 
+        // Use NetworkTransform for server auth, ClientNetworkTransform for client auth
         HandleMovements(); // Comment this when use server authoritative
         HandleInteractions();
     }
@@ -91,15 +111,6 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         {
             selectedCounter = selectedCounter
         });
-    }
-
-    private void HandleInput()
-    {
-        inputVector = GameInput.Instance.GetMovementVectorNormalized();
-        moveDir = new Vector3(inputVector.x, 0, inputVector.y);
-        //HandleMovementsServerRpc(inputVector, moveDir); // This is for server authoritative principle. Clients send input to server then server processes input then make clients move
-        // Pass arguments to rpc this required, test by removing
-        // Use NetworkTransform for server auth, ClientNetworkTransform for client auth
     }
 
     public bool IsWalking()
@@ -191,6 +202,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         this.kitchenObject = kitchenObject;
 
         if(kitchenObject != null)
+        {
             OnPickupSomething?.Invoke(this, EventArgs.Empty);
+            OnAnyPlayerPickupSomething?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

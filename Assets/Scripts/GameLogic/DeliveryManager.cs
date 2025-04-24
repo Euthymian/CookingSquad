@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class DeliveryManager : MonoBehaviour
+public class DeliveryManager : NetworkBehaviour
 {
     public event EventHandler OnUpdateWaitingRecipesList;
     public event EventHandler OnDeliverRecipeSuccess;
@@ -28,18 +29,27 @@ public class DeliveryManager : MonoBehaviour
 
     private void Update()
     {
+        if (!IsServer) return;
+
         spawnRecipeTimer -= Time.deltaTime;
         if (spawnRecipeTimer <= 0) {
             spawnRecipeTimer = spawnRecipeTimerMax;
             
             if(GameManager.Instance.IsGamePlaying() && waitingRecipeSOList.Count < maxRecipes)
             {
-                RecipeSO newWaitingRecipe = availableRecipeSO.recipeSOList[UnityEngine.Random.Range(0, availableRecipeSO.recipeSOList.Count)];
-                waitingRecipeSOList.Add(newWaitingRecipe);
-                
-                OnUpdateWaitingRecipesList?.Invoke(this, EventArgs.Empty);
+                int newWaitingRecipeIndex = UnityEngine.Random.Range(0, availableRecipeSO.recipeSOList.Count);
+                SendRecipeToClientRpc(newWaitingRecipeIndex);
             }
         }
+    }
+
+    [ClientRpc]
+    private void SendRecipeToClientRpc(int newWaitingRecipeIndex)
+    {
+        RecipeSO newWaitingRecipe = availableRecipeSO.recipeSOList[newWaitingRecipeIndex];
+        waitingRecipeSOList.Add(newWaitingRecipe);
+
+        OnUpdateWaitingRecipesList?.Invoke(this, EventArgs.Empty);
     }
 
     public List<RecipeSO> GetWaitingRecipesSOList()
@@ -76,19 +86,43 @@ public class DeliveryManager : MonoBehaviour
 
                 if (plateContentMatchesRecipe)
                 {
-                    numRecipesDelivered += 1;
-
-                    waitingRecipeSOList.RemoveAt(i);
-
-                    OnUpdateWaitingRecipesList?.Invoke(this, EventArgs.Empty);
-                    OnDeliverRecipeSuccess?.Invoke(this, EventArgs.Empty);
+                    DeliverCorrectRecipeServerRpc(i);
 
                     return;
                 }
             }
         }
-        
+
+        DeliverIncorrectRecipeServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DeliverIncorrectRecipeServerRpc()
+    {
+        DeliverIncorrectRecipeClientRpc();
+    }
+
+    [ClientRpc]
+    private void DeliverIncorrectRecipeClientRpc()
+    {
         OnDeliverRecipeFail?.Invoke(this, EventArgs.Empty);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DeliverCorrectRecipeServerRpc(int currentRecipeSOListIndex)
+    {
+        DeliverCorrectRecipeClientRpc(currentRecipeSOListIndex);
+    }
+
+    [ClientRpc]
+    private void DeliverCorrectRecipeClientRpc(int currentRecipeSOListIndex)
+    {
+        numRecipesDelivered += 1;
+
+        waitingRecipeSOList.RemoveAt(currentRecipeSOListIndex);
+
+        OnUpdateWaitingRecipesList?.Invoke(this, EventArgs.Empty);
+        OnDeliverRecipeSuccess?.Invoke(this, EventArgs.Empty);
     }
 
     public int GetNumRecipesDelivered()
