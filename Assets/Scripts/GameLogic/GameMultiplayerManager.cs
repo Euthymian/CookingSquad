@@ -48,11 +48,11 @@ public class GameMultiplayerManager : NetworkBehaviour
 
     public void DestroyKitchenObject(KitchenObject kitchenObject)
     {
-        DesDestroyKitchenObjectServerRpc(kitchenObject.NetworkObject);
+        DestroyKitchenObjectServerRpc(kitchenObject.NetworkObject);
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void DesDestroyKitchenObjectServerRpc(NetworkObjectReference kitchenObjectNetworkObjectRef)
+    private void DestroyKitchenObjectServerRpc(NetworkObjectReference kitchenObjectNetworkObjectRef)
     {
         kitchenObjectNetworkObjectRef.TryGet(out NetworkObject kitchenObjectNetworkObject);
         KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();

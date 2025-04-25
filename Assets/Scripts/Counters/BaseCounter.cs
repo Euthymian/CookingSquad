@@ -7,7 +7,7 @@ using UnityEngine;
 public class BaseCounter : NetworkBehaviour, IKitchenObjectParent
 {
     [SerializeField] private Transform kitchenObjectHoldPoint;
-    private KitchenObject kitchenObject;
+    [SerializeField] private KitchenObject kitchenObject;
     public static event EventHandler OnAnyObjectDropped;
 
     public static void ResetStaticData()
