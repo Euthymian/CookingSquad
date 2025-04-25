@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
     private State state;
     private float countdownToStartTimer = 1f;
     private float gamePlayingTimeMax = 300f;
-    private float gamePlayingTimer = 300f;
+    private float gamePlayingTimer;
     private bool isPausing = false;
     public bool IsPausing { get { return isPausing; } }
 
@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        gamePlayingTimer = gamePlayingTimeMax;
         GameInput.Instance.OnInteractPause += GameInput_OnInteractPause;
         GameInput.Instance.OnInteractAction += GameInput_OnInteractAction;
     }

@@ -83,10 +83,10 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         // Pass arguments to rpc is required, test by removing. 
         // Use NetworkTransform for server auth, ClientNetworkTransform for client auth
         HandleMovements(); // Comment this when use server authoritative
-        HandleInteractions();
+        HandleSelectedCounterVisual();
     }
 
-    private void HandleInteractions()
+    private void HandleSelectedCounterVisual()
     {
         if (moveDir != Vector3.zero)
             lastMoveDir = moveDir;
@@ -206,5 +206,10 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
             OnPickupSomething?.Invoke(this, EventArgs.Empty);
             OnAnyPlayerPickupSomething?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    public NetworkObject GetNetworkObject()
+    {
+        return NetworkObject;
     }
 }

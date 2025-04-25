@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class ContainerCounter : BaseCounter
@@ -14,7 +15,19 @@ public class ContainerCounter : BaseCounter
         if (!player.HasKitchenObject())
         {
             KitchenObject.SpawnKitchenObject(kitchenObjectSO,player);
-            OnPlayerInteractAnimationTrigger?.Invoke(this, EventArgs.Empty);
+            HandleAnimationSyncServerRpc();
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void HandleAnimationSyncServerRpc()
+    {
+        HandleAnimationSyncClientRpc();
+    }
+
+    [ClientRpc]
+    private void HandleAnimationSyncClientRpc()
+    {
+        OnPlayerInteractAnimationTrigger?.Invoke(this, EventArgs.Empty);
     }
 }
