@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class KitchenObject : NetworkBehaviour
 {
-    [SerializeField] protected KitchenObjectSO kitchenObjectSO;
+    [SerializeField] private KitchenObjectSO kitchenObjectSO;
 
     private IKitchenObjectParent kitchenObjectParent;
     private FollowTransform followTransform;
