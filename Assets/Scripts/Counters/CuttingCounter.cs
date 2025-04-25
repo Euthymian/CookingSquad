@@ -32,6 +32,7 @@ public class CuttingCounter : BaseCounter, IHasProgress
         OnProgessUpdate?.Invoke(this, 0);
     }
 
+    // Anytime a new object is put on the cutting counter, client will run ServerRpc which run ClientRpc to reset cuttingProgress on every player
     public override void Interact(Player player)
     {
         if (!HasKitchenObject() && player.HasKitchenObject() 
@@ -65,6 +66,7 @@ public class CuttingCounter : BaseCounter, IHasProgress
         CuttingProgressDoneServerRpc();
     }
 
+    // every client sees the cutting progress
     [ClientRpc]
     private void CutObjectClientRpc()
     {
@@ -74,7 +76,8 @@ public class CuttingCounter : BaseCounter, IHasProgress
         OnCuttingAnimationTrigger?.Invoke(this, EventArgs.Empty);
         OnAnyCut?.Invoke(this, EventArgs.Empty);
     }
-
+    
+    // When cut completed, server will handle destroy original object and spawn sliced object
     [ServerRpc(RequireOwnership = false)]
     private void CuttingProgressDoneServerRpc()
     {

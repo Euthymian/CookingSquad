@@ -25,6 +25,9 @@ public class SelectedCounterVisual : MonoBehaviour
         {
             Player.LocalInstance.OnSelectedCounterChanged -= Player_OnSelectedCounterChanged;
             Player.LocalInstance.OnSelectedCounterChanged += Player_OnSelectedCounterChanged;
+            // when multiple players spawned, Player.LocalInstance.OnSelectedCounterChangde event that spawned before others
+            // will be register multiple times. 
+            // -> unregister then register will make this LocalInstance.OnSelectedCounterChanged only be registered once
         }
     }
 

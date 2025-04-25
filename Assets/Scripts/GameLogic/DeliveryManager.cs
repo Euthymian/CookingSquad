@@ -42,7 +42,10 @@ public class DeliveryManager : NetworkBehaviour
             }
         }
     }
-
+    /*
+        Only server generate new waiting recipe
+        then the ClientRpc will notify all client to update the WaitingRecipesUI 
+     */
     [ClientRpc]
     private void SendRecipeToClientRpc(int newWaitingRecipeIndex)
     {
@@ -95,6 +98,11 @@ public class DeliveryManager : NetworkBehaviour
 
         DeliverIncorrectRecipeServerRpc();
     }
+
+    /*
+        This is client authoritative system. When deliver, client will run the ServerRpc (set RequireOwnership = False -> Any clients can run ServerRpc)
+        The ServerRpc will then run ClientRpc that notifies every player to popup delivery animation and update RecipesWaiting if the delivery is correct
+     */
 
     [ServerRpc(RequireOwnership = false)]
     private void DeliverIncorrectRecipeServerRpc()

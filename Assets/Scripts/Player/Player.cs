@@ -16,6 +16,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     }
 
     public static Player LocalInstance { get; private set; }
+    // -> many players will be spawned. but only the owner of this player (machine that running the game) is LocalPlayer
+    // see OnNetworkSpawn() function
+    // this LocalPlayer will be used to set visual for selected counter
 
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs

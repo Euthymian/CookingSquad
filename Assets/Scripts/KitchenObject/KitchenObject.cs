@@ -15,6 +15,8 @@ public class KitchenObject : NetworkBehaviour
         followTransform = GetComponent<FollowTransform>();
     }
 
+    // A non-network object cant be a parent of a network object
+    // -> create a simple follow script to have exact same visual as set parent
     public void SetKitchenObjectParent(IKitchenObjectParent kitchenObjectParent)
     {
         SetKitchenObjectParentServerRpc(kitchenObjectParent.GetNetworkObject());
@@ -79,6 +81,8 @@ public class KitchenObject : NetworkBehaviour
     {
         kitchenObjectParent.ClearKitchenObject();
     }
+
+    // Spawn and destroy object will be handle seperatedly 
 
     public static void DestroyKitchentObject(KitchenObject kitchenObject)
     {
