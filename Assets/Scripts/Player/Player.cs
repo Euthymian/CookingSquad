@@ -30,6 +30,8 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
     [SerializeField] private LayerMask counterLayer;
+    [SerializeField] private LayerMask collisionsLayer;
+    [SerializeField] private List<Vector3> spawnPosList;
     private Vector2 inputVector => GameInput.Instance.GetMovementVectorNormalized();
     private Vector3 moveDir => new Vector3(inputVector.x, 0, inputVector.y);
     private Vector3 lastMoveDir;
@@ -53,7 +55,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         {
             LocalInstance = this;
         }
-
+        transform.position = spawnPosList[(int)OwnerClientId];
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
     }
 
@@ -157,18 +159,18 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
         float moveDistance = moveSpeed * Time.deltaTime;
 
-        bool canMove = !Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, moveDir, moveDistance);
+        bool canMove = !Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer);
 
         Vector3 updatedMoveDir = moveDir;
 
         if (!canMove && (Mathf.Abs(moveDir.x) > 0.2f) && (Mathf.Abs(moveDir.z) > 0.2f))
         {
-            if (!Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, new Vector3(moveDir.x, 0, 0), moveDistance))
+            if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer))
             {
                 canMove = true;
                 updatedMoveDir.z = 0;
             }
-            else if (!Physics.CapsuleCast(transform.position, transform.position + Vector3.up * playerHeight, playerRadius, new Vector3(0, 0, moveDir.z), moveDistance))
+            else if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer))
             {
                 canMove = true;
                 updatedMoveDir.x = 0;
