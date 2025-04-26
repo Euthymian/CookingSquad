@@ -37,23 +37,19 @@ public class PausedUI : MonoBehaviour
 
     private void Start()
     {
-        GameInput.Instance.OnInteractPause += GameInput_OnInteractPause;
-        gameObject.SetActive(false);
+        GameManager.Instance.OnLocalGamePaused += GameManager_OnLocalGamePaused;
+        GameManager.Instance.OnLocalGameUnpaused += GameManager_OnLocalGameUnpaused;
+        Hide();
     }
 
-    private void GameInput_OnInteractPause(object sender, System.EventArgs e)
+    private void GameManager_OnLocalGameUnpaused(object sender, System.EventArgs e)
     {
-        TogglePauseMenu();
+        Hide();
     }
 
-    private void TogglePauseMenu()
+    private void GameManager_OnLocalGamePaused(object sender, System.EventArgs e)
     {
-        if (GameManager.Instance.IsGameOver()) return;
-
-        isPausing = !isPausing;
-
-        if (isPausing) Show();
-        else Hide();
+        Show();
     }
 
     private void Hide()

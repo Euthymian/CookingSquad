@@ -82,7 +82,7 @@ public class OptionsUI : MonoBehaviour
 
     private void GameInput_OnInteractPause(object sender, System.EventArgs e)
     {
-        if (GameManager.Instance.IsPausing)
+        if (GameManager.Instance.IsLocalPausing)
         {
             Hide();
         }

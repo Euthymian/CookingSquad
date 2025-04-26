@@ -94,7 +94,9 @@ public class StoveCounter : BaseCounter, IHasProgress
                     break;
                 case State.Fried:
                     burningTime.Value += Time.deltaTime;
-                    
+                    // an event will fire any time networkvariable.value chnage automatically, but with normal variable
+                    // fire an event manually is required. OnProgessUpdate?.Invoke(this, burningTime/timeMax);
+
                     if (burningTime.Value > burningRecipeSO.burningTimeMax)
                     {
                         KitchenObject.DestroyKitchentObject(GetKitchenObject());
