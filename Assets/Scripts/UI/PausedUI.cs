@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,6 @@ public class PausedUI : MonoBehaviour
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button optionsButton;
     [SerializeField] private Button mainMenuButton;
-    private bool isPausing = false;
 
     private void Awake()
     {
@@ -18,7 +18,6 @@ public class PausedUI : MonoBehaviour
 
         resumeButton.onClick.AddListener(() =>
         {
-            isPausing = false;
             GameManager.Instance.TogglePauseGame();
             Hide();
         });
@@ -30,7 +29,8 @@ public class PausedUI : MonoBehaviour
         });
 
         mainMenuButton.onClick.AddListener(() => 
-        { 
+        {
+            NetworkManager.Singleton.Shutdown();
             Loader.Load(Loader.Scene.MainMenuScene);
         });
     }

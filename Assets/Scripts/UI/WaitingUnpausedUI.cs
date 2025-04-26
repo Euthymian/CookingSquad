@@ -18,7 +18,6 @@ public class WaitingUnpausedUI : MonoBehaviour
 
     private void GameManager_OnMultiPlayerGamePaused(object sender, System.EventArgs e)
     {
-        print("waitpause");
         Show();
     }
 

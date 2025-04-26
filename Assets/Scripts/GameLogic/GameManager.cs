@@ -37,6 +37,7 @@ public class GameManager : NetworkBehaviour
     private bool isLocalPausing = false;
     private Dictionary<ulong, bool> playersPauseDict;
     private NetworkVariable<bool> isGamePaused = new NetworkVariable<bool>(false);
+    private bool autoTestGamePausedState;
     public bool IsLocalPausing { get { return isLocalPausing; } }
 
     private void Awake()
@@ -51,6 +52,31 @@ public class GameManager : NetworkBehaviour
         gamePlayingTimer.Value = gamePlayingTimeMax;
         state.OnValueChanged += State_OnValueChanged;
         isGamePaused.OnValueChanged += IsGamePaused_OnValueChanged;
+
+        if (IsServer)
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+        }
+    }
+
+    private void NetworkManager_OnClientDisconnectCallback(ulong clientID)
+    {
+        autoTestGamePausedState = true;
+        /*
+         Scenario: When player that paused quit game, the WaitingToUnpuased stayed on other players screen
+         Cant directly call CheckGamePauseState(); here becuase after fire the DisconnectCallback, the disconnected clientID is still in the clientIDList 
+        of networkManager -> The waiting to unpaused UI will stay.
+        -> Solution: Wait after 1 frame so the new clientIDList is now uptodate then run the CheckGamePauseState();
+         */
+    }
+
+    private void LateUpdate()
+    {
+        if (autoTestGamePausedState)
+        {
+            autoTestGamePausedState = false;
+            CheckGamePauseState();
+        }
     }
 
     private void State_OnValueChanged(State prevValue, State newValue)

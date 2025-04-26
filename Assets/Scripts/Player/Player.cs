@@ -57,6 +57,19 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         }
         transform.position = spawnPosList[(int)OwnerClientId];
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
+
+        if (IsServer) // This is because both Server and Client that disconnected invoke the DisconnectCallback -> just server is enough
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+        }
+    }
+
+    private void NetworkManager_OnClientDisconnectCallback(ulong clientID)
+    {
+        if(clientID == OwnerClientId && HasKitchenObject())
+        {
+            KitchenObject.DestroyKitchentObject(GetKitchenObject());
+        }
     }
 
     private void Start()
@@ -67,7 +80,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
 
     private void GameInput_OnInteractAlternateAction(object sender, EventArgs e)
     {
-        if(!GameManager.Instance.IsGamePlaying()) return;
+        if (!GameManager.Instance.IsGamePlaying()) return;
 
         if (selectedCounter != null)
             selectedCounter.InteractAlternate(this);
@@ -77,13 +90,13 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     {
         if (!GameManager.Instance.IsGamePlaying()) return;
 
-        if (selectedCounter != null) 
+        if (selectedCounter != null)
             selectedCounter.Interact(this);
     }
 
     private void Update()
     {
-        if(!IsOwner) return;
+        if (!IsOwner) return;
         //HandleMovementsServerRpc(inputVector, moveDir); // This is for server authoritative principle. Clients send input to server then server processes input then make clients move
         // Pass arguments to rpc is required, test by removing. 
         // Use NetworkTransform for server auth, ClientNetworkTransform for client auth
@@ -206,7 +219,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     {
         this.kitchenObject = kitchenObject;
 
-        if(kitchenObject != null)
+        if (kitchenObject != null)
         {
             OnPickupSomething?.Invoke(this, EventArgs.Empty);
             OnAnyPlayerPickupSomething?.Invoke(this, EventArgs.Empty);
