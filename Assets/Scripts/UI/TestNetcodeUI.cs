@@ -13,14 +13,14 @@ public class TestNetcodeUI : MonoBehaviour
     {
         hostButton.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.StartHost();
+            GameMultiplayerManager.Instance.StartHost();
             Debug.Log("HOST");
             Hide();
         });
 
         clientButton.onClick.AddListener(() => 
         {
-            NetworkManager.Singleton.StartClient();
+            GameMultiplayerManager.Instance.StartClient();
             Debug.Log("CLIENT");
             Hide();
         });

@@ -23,6 +23,17 @@ public class HostDisconnectedUI : MonoBehaviour
         Hide();
     }
 
+    /*
+     game started, client late joined, go to menu, rejoin (game still run) -> error becuase HostDisconnectedUI was destroyed in scenechanged but still try to access
+    -> onDestroy, unregister the callback
+            player line 63 also had this registration ---> consider unregister
+     */
+
+    private void OnDestroy()
+    {
+        NetworkManager.Singleton.OnClientDisconnectCallback -= NetworkManager_OnClientDisconnectCallback;
+    }
+
     private void NetworkManager_OnClientDisconnectCallback(ulong clientID)
     {
         if(clientID == NetworkManager.ServerClientId)
