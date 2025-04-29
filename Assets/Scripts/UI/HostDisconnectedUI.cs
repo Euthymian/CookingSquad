@@ -12,7 +12,7 @@ public class HostDisconnectedUI : MonoBehaviour
     {
         playAgainButton.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.Shutdown();
+            NetworkManager.Singleton.Shutdown(); // Disconnect from server
             Loader.Load(Loader.Scene.MainMenuScene);
         });
     }
@@ -31,6 +31,7 @@ public class HostDisconnectedUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        print(NetworkManager.Singleton.IsServer);
         NetworkManager.Singleton.OnClientDisconnectCallback -= NetworkManager_OnClientDisconnectCallback;
     }
 

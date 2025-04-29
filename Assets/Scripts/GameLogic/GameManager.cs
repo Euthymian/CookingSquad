@@ -40,6 +40,8 @@ public class GameManager : NetworkBehaviour
     private bool autoTestGamePausedState;
     public bool IsLocalPausing { get { return isLocalPausing; } }
 
+    [SerializeField] private Transform playerPrefab;
+
     private void Awake()
     {
         Instance = this;
@@ -56,6 +58,16 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += NetworkSceneManager_OnLoadEventCompleted;
+        }
+    }
+
+    private void NetworkSceneManager_OnLoadEventCompleted(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        foreach(ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            Transform playerTransform = Instantiate(playerPrefab);
+            playerTransform.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientID, true);
         }
     }
 

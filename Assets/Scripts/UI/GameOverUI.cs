@@ -14,7 +14,7 @@ public class GameOverUI : MonoBehaviour
     {
         playAgainButton.onClick.AddListener(() =>
         {
-            NetworkManager.Singleton.Shutdown();
+            NetworkManager.Singleton.Shutdown(); // Disconnect from server
             Loader.Load(Loader.Scene.MainMenuScene);
         });
     }
