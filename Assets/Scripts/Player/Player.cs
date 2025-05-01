@@ -27,6 +27,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     }
     public event EventHandler OnPickupSomething;
 
+    [SerializeField] private PlayerVisual PlayerVisual;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
     [SerializeField] private LayerMask counterLayer;
@@ -55,7 +56,7 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         {
             LocalInstance = this;
         }
-        transform.position = spawnPosList[(int)OwnerClientId];
+        transform.position = spawnPosList[GameMultiplayerManager.Instance.GetPlayerDataIndexFromClientID(OwnerClientId)];
         OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
 
         if (IsServer) // This is because both Server and Client that disconnected invoke the DisconnectCallback -> just server is enough
@@ -76,6 +77,9 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
     {
         GameInput.Instance.OnInteractAction += GameInput_OnInteractAction;
         GameInput.Instance.OnInteractAlternateAction += GameInput_OnInteractAlternateAction;
+
+        PlayerData playerData = GameMultiplayerManager.Instance.GetPlayerDataFromClientID(OwnerClientId);
+        PlayerVisual.SetColor(GameMultiplayerManager.Instance.GetPlayerColor(playerData.colorID));
     }
 
     private void GameInput_OnInteractAlternateAction(object sender, EventArgs e)
