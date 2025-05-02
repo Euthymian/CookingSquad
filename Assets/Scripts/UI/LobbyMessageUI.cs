@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,16 @@ public class LobbyMessageUI : MonoBehaviour
         LobbyManager.Instance.OnJoinFailed += LobbyManager_OnJoinFailed;
         LobbyManager.Instance.OnQuickJoinFailed += LobbyManager_OnQuickJoinFailed;
         Hide();
+    }
+
+    private void OnDestroy()
+    {
+        GameMultiplayerManager.Instance.OnFailedToJoinGame -= GameMultiplayerManager_OnFailedToJoinGame;
+        LobbyManager.Instance.OnCreateLobbyStarted -= LobbyManager_OnCreateLobbyStarted;
+        LobbyManager.Instance.OnCreateLobbyFailed -= LobbyManager_OnCreateLobbyFailed;
+        LobbyManager.Instance.OnJoinStarted -= LobbyManager_OnJoinStarted;
+        LobbyManager.Instance.OnJoinFailed -= LobbyManager_OnJoinFailed;
+        LobbyManager.Instance.OnQuickJoinFailed -= LobbyManager_OnQuickJoinFailed;
     }
 
     private void LobbyManager_OnQuickJoinFailed(object sender, System.EventArgs e)
@@ -49,11 +60,6 @@ public class LobbyMessageUI : MonoBehaviour
     private void LobbyManager_OnCreateLobbyStarted(object sender, System.EventArgs e)
     {
         ShowMessage("Creating Lobby...");
-    }
-
-    private void OnDestroy()
-    {
-        GameMultiplayerManager.Instance.OnFailedToJoinGame -= GameMultiplayerManager_OnFailedToJoinGame;
     }
 
     private void GameMultiplayerManager_OnFailedToJoinGame(object sender, System.EventArgs e)
