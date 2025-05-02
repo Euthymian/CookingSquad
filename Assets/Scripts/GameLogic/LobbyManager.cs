@@ -49,7 +49,8 @@ public class LobbyManager : MonoBehaviour
         if (UnityServices.State != ServicesInitializationState.Initialized)
         {
             InitializationOptions options = new InitializationOptions();
-            options.SetProfile(UnityEngine.Random.Range(0, 10000).ToString()); // generate unique profile name for each initialization
+            options.SetProfile(UnityEngine.Random.Range(0, 10000).ToString()); 
+            // generate unique profile name for each initialization -> make possible to run multiple builds on 1 machine
 
             await UnityServices.InitializeAsync(options);
 
@@ -126,7 +127,7 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    private async Task<Allocation> AllocateRelay()
+    public async Task<Allocation> AllocateRelay()
     {
         try
         {

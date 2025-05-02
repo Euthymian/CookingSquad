@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -8,11 +9,16 @@ using UnityEngine.UI;
 
 public class LobbyMessageUI : MonoBehaviour
 {
+    public static LobbyMessageUI Instance { get; private set; }
+
+    public event EventHandler OnClosedMessage;
+
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button closeButton;
 
     private void Awake()
     {
+        Instance = this;
         closeButton.onClick.AddListener(Hide);
     }
 
@@ -87,6 +93,7 @@ public class LobbyMessageUI : MonoBehaviour
 
     private void Hide()
     {
+        OnClosedMessage?.Invoke(this, EventArgs.Empty);
         gameObject.SetActive(false);
     }
 }

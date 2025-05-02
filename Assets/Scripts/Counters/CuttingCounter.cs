@@ -62,14 +62,32 @@ public class CuttingCounter : BaseCounter, IHasProgress
     [ServerRpc(RequireOwnership = false)]
     private void CutObjectServerRpc()
     {
-        CutObjectClientRpc();
-        CuttingProgressDoneServerRpc();
+        if (HasKitchenObject() && GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO()))
+        {
+            CutObjectClientRpc();
+            CuttingProgressDoneServerRpc();
+        }
     }
 
     // every client sees the cutting progress
     [ClientRpc]
     private void CutObjectClientRpc()
     {
+        // there is a case that client try to cut so many times and the server delay is high, game will crash because of null exception 
+        // because GetKitchenObject() will be null -> no cuttingRecipeSO.cuttingProgressMax
+        // solution: verify cut availabity before cut
+        /*
+        FROM: 
+        CutObjectClientRpc();
+        CuttingProgressDoneServerRpc();
+
+        TO:
+        if (HasKitchenObject() && GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO()))
+        {
+            CutObjectClientRpc();
+            CuttingProgressDoneServerRpc();
+        }
+        */
         cuttingProgress++;
         CuttingRecipeSO cuttingRecipeSO = GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO());
         OnProgessUpdate?.Invoke(this, (float)cuttingProgress / cuttingRecipeSO.cuttingProgressMax);
@@ -81,14 +99,17 @@ public class CuttingCounter : BaseCounter, IHasProgress
     [ServerRpc(RequireOwnership = false)]
     private void CuttingProgressDoneServerRpc()
     {
-        CuttingRecipeSO cuttingRecipeSO = GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO());
-        if (cuttingProgress >= cuttingRecipeSO.cuttingProgressMax)
+        if (HasKitchenObject() && GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO()))
         {
-            KitchenObjectSO output = GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO()).output;
+            CuttingRecipeSO cuttingRecipeSO = GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO());
+            if (cuttingProgress >= cuttingRecipeSO.cuttingProgressMax)
+            {
+                KitchenObjectSO output = GetMatchedCuttingRecipe(GetKitchenObject().GetKitchenObjectSO()).output;
 
-            KitchenObject.DestroyKitchentObject(GetKitchenObject());
+                KitchenObject.DestroyKitchentObject(GetKitchenObject());
 
-            KitchenObject.SpawnKitchenObject(output, this);
+                KitchenObject.SpawnKitchenObject(output, this);
+            }
         }
     }
 

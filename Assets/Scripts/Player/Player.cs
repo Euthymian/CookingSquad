@@ -179,15 +179,15 @@ public class Player : NetworkBehaviour, IKitchenObjectParent
         bool canMove = !Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer);
 
         Vector3 updatedMoveDir = moveDir;
-
-        if (!canMove && (Mathf.Abs(moveDir.x) > 0.2f) && (Mathf.Abs(moveDir.z) > 0.2f))
+        print(moveDir);
+        if (!canMove && (Mathf.Abs(moveDir.x) > 0.1f) && (Mathf.Abs(moveDir.z) > 0.1f))
         {
-            if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer))
+            if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, new Vector3(moveDir.x, 0, 0), Quaternion.identity, moveDistance, collisionsLayer))
             {
                 canMove = true;
                 updatedMoveDir.z = 0;
             }
-            else if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, moveDir, Quaternion.identity, moveDistance, collisionsLayer))
+            else if (!Physics.BoxCast(transform.position, Vector3.one * playerRadius, new Vector3(0, 0, moveDir.z), Quaternion.identity, moveDistance, collisionsLayer))
             {
                 canMove = true;
                 updatedMoveDir.x = 0;

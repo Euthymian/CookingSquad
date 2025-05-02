@@ -49,7 +49,9 @@ public class LobbyUI : MonoBehaviour
     }
 
     private void Start()
-    { 
+    {
+        LobbyMessageUI.Instance.OnClosedMessage += LobbyMessageUI_OnClosedMessage;
+
         playerNameInputField.text = GameMultiplayerManager.Instance.GetPlayerName();
         playerNameInputField.onValueChanged.AddListener((string newValue) =>
         {
@@ -58,6 +60,11 @@ public class LobbyUI : MonoBehaviour
 
         LobbyManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
         UpdateLobbyList(new List<Lobby>());
+    }
+
+    private void LobbyMessageUI_OnClosedMessage(object sender, EventArgs e)
+    {
+        createLobbyButton.Select();
     }
 
     private void OnDestroy()

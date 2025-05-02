@@ -2,7 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
+using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -11,6 +14,8 @@ public class GameMultiplayerManager : NetworkBehaviour
 {
     public const int MAX_PLAYER_AMOUNT = 4;
     private const string PLAYER_PREFS_PLAYER_NAME = "Player Name";
+
+    public static bool isMultiplayer;
     
     public static GameMultiplayerManager Instance { get; private set; }
 
@@ -33,6 +38,24 @@ public class GameMultiplayerManager : NetworkBehaviour
 
         playerDataNetworkList = new NetworkList<PlayerData>();
         playerDataNetworkList.OnListChanged += PlayerDataNetworkList_OnListChanged;
+    }
+
+    private int waitTwoFrame = 0;
+
+    private async void Update()
+    {
+        if (!isMultiplayer && waitTwoFrame < 2)
+        {
+            waitTwoFrame++;
+        }
+        else if (!isMultiplayer && waitTwoFrame == 2)
+        {
+            waitTwoFrame++;
+            Allocation allocation = await LobbyManager.Instance.AllocateRelay();
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "dtls"));
+            StartHost();
+            Loader.LoadNetwork(Loader.Scene.GameScene);
+        }
     }
 
     public string GetPlayerName()
@@ -156,6 +179,17 @@ public class GameMultiplayerManager : NetworkBehaviour
     private void SpawnKitchenObjectServerRpc(int kitchenObjectSOIndex, NetworkObjectReference kitchenObjectParentNetworkObjectRef)
     {
         KitchenObjectSO kitchenObjectSO = GetKitchenObjectSOFromIndex(kitchenObjectSOIndex);
+
+        kitchenObjectParentNetworkObjectRef.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
+        IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
+
+        // Again problem about spam click -> same as trash and cutting counter
+        if (kitchenObjectParent.HasKitchenObject())
+        {
+            // Parent already spawned an object
+            return;
+        }
+
         Transform kitchenObjectTransform = Instantiate(kitchenObjectSO.prefab);
 
         NetworkObject kitchenObjectNetworkObject = kitchenObjectTransform.GetComponent<NetworkObject>();
@@ -163,8 +197,10 @@ public class GameMultiplayerManager : NetworkBehaviour
         kitchenObjectNetworkObject.Spawn(true); // Destroy on scene change
 
         KitchenObject kitchenObject = kitchenObjectTransform.GetComponent<KitchenObject>();
-        kitchenObjectParentNetworkObjectRef.TryGet(out NetworkObject kitchenObjectParentNetworkObject);
-        IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();
+
+        //kitchenObjectParentNetworkObjectRef.TryGet(out NetworkObject kitchenObjectParentNetworkObject);                     | -> Move these 2 lines above
+        //IKitchenObjectParent kitchenObjectParent = kitchenObjectParentNetworkObject.GetComponent<IKitchenObjectParent>();   |
+        
         kitchenObject.SetKitchenObjectParent(kitchenObjectParent); // <- Go to definition 
     }
 
@@ -188,6 +224,15 @@ public class GameMultiplayerManager : NetworkBehaviour
     private void DestroyKitchenObjectServerRpc(NetworkObjectReference kitchenObjectNetworkObjectRef)
     {
         kitchenObjectNetworkObjectRef.TryGet(out NetworkObject kitchenObjectNetworkObject);
+
+        // There is a case that client trys to use trash multiple times, the first time actually destroyed object
+        // -> next times destroyed nothing -> null exception
+        if (kitchenObjectNetworkObject == null)
+        {
+            // This object is already destroyed
+            return;
+        }
+
         KitchenObject kitchenObject = kitchenObjectNetworkObject.GetComponent<KitchenObject>();
 
         ClearKitchenObjectOnParentClientRpc(kitchenObjectNetworkObject);
