@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,12 +11,14 @@ public class CharacterSelectPlayer : MonoBehaviour
     [SerializeField] private GameObject readyTextGameObject;
     [SerializeField] private PlayerVisual playerVisual;
     [SerializeField] private Button kickButton;
+    [SerializeField] private TextMeshPro playerNameText;
 
     private void Awake()
     {
         kickButton.onClick.AddListener(() =>
         {
             PlayerData playerData = GameMultiplayerManager.Instance.GetPlayerDataFromPlayerIndex(playerIndex);
+            LobbyManager.Instance.KickPlayer(playerData.playerID.ToString());
             GameMultiplayerManager.Instance.KickPlayer(playerData.clientID);
         });
     }
@@ -56,6 +59,7 @@ public class CharacterSelectPlayer : MonoBehaviour
             Show();
             PlayerData playerData = GameMultiplayerManager.Instance.GetPlayerDataFromPlayerIndex(playerIndex);
             playerVisual.SetColor(GameMultiplayerManager.Instance.GetPlayerColor(playerData.colorID));
+            playerNameText.text = playerData.playerName.ToString();
             readyTextGameObject.SetActive(CharacterSelectReady.Instance.IsPlayerReady(playerData.clientID));
         }
         else
